@@ -15,38 +15,48 @@
   <ul id="taskList"></ul>
 
   <script>
-    // L'URL de l'API backend. En production, adaptez cette URL pour pointer vers le service backend.
-    const apiUrl = 'http://backend-service/tasks';
-
-    // Fonction pour récupérer et afficher les tâches
-    async function fetchTasks() {
-      const response = await fetch(apiUrl);
-      const tasks = await response.json();
-      const list = document.getElementById('taskList');
-      list.innerHTML = '';
-      tasks.forEach(task => {
+    // Fonction pour afficher les tâches dans la liste
+    function afficherTaches(taches) {
+      const taskList = document.getElementById('taskList');
+      taskList.innerHTML = ''; // vider la liste
+      taches.forEach(tache => {
         const li = document.createElement('li');
-        li.innerText = `${task.title} : ${task.description}`;
-        list.appendChild(li);
+        li.textContent = `${tache.title} : ${tache.description}`;
+        taskList.appendChild(li);
       });
     }
 
-    // Gestion de l'envoi du formulaire
-    document.getElementById('taskForm').addEventListener('submit', async function(e) {
+    // Récupérer les tâches depuis le backend
+    function fetchTasks() {
+      fetch('http://localhost:8000/tasks')
+        .then(response => response.json())
+        .then(data => afficherTaches(data))
+        .catch(error => console.error('Erreur lors de la récupération des tâches :', error));
+    }
+
+    // Gestion de l'envoi du formulaire pour ajouter une tâche
+    document.getElementById('taskForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const title = document.getElementById('title').value;
       const description = document.getElementById('description').value;
-      await fetch(apiUrl, {
+      // Vous pouvez générer un id automatiquement pour la démo ou laisser l'utilisateur le saisir
+      const id = Date.now(); // par exemple, utiliser l'horodatage comme id
+
+      fetch('http://localhost:8000/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description })
-      });
-      // Réinitialiser le formulaire et rafraîchir la liste
-      e.target.reset();
-      fetchTasks();
+        body: JSON.stringify({ id, title, description })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Tâche ajoutée :', data);
+        // Actualiser la liste des tâches après l'ajout
+        fetchTasks();
+      })
+      .catch(error => console.error('Erreur lors de l’ajout de la tâche :', error));
     });
 
-    // Chargement initial des tâches
+    // Charger les tâches dès le chargement de la page
     fetchTasks();
   </script>
 </body>

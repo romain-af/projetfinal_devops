@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Task Manager</title>
+</head>
+<body>
+  <h1>Task Manager</h1>
+  <form id="taskForm">
+    <input type="text" id="title" placeholder="Titre de la tâche" required>
+    <input type="text" id="description" placeholder="Description">
+    <button type="submit">Ajouter</button>
+  </form>
+  <h2>Liste des tâches</h2>
+  <ul id="taskList"></ul>
+
+  <script>
+    // L'URL de l'API backend. En production, adaptez cette URL pour pointer vers le service backend.
+    const apiUrl = 'http://backend-service/tasks';
+
+    // Fonction pour récupérer et afficher les tâches
+    async function fetchTasks() {
+      const response = await fetch(apiUrl);
+      const tasks = await response.json();
+      const list = document.getElementById('taskList');
+      list.innerHTML = '';
+      tasks.forEach(task => {
+        const li = document.createElement('li');
+        li.innerText = `${task.title} : ${task.description}`;
+        list.appendChild(li);
+      });
+    }
+
+    // Gestion de l'envoi du formulaire
+    document.getElementById('taskForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const title = document.getElementById('title').value;
+      const description = document.getElementById('description').value;
+      await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description })
+      });
+      // Réinitialiser le formulaire et rafraîchir la liste
+      e.target.reset();
+      fetchTasks();
+    });
+
+    // Chargement initial des tâches
+    fetchTasks();
+  </script>
+</body>
+</html>

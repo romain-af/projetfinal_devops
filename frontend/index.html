@@ -6,14 +6,13 @@
   <style>
     li { margin-bottom: 8px; }
     button { margin-left: 5px; }
-    /* Ajoute un espace en bas de la section de recherche */
     .search-container { margin-bottom: 20px; }
   </style>
 </head>
 <body>
   <h1>Task Manager</h1>
 
-  <!-- Section de recherche avec espace en bas -->
+  <!-- Section de recherche -->
   <div class="search-container">
     <input type="text" id="searchQuery" placeholder="Recherche par mot-clé">
     <button onclick="searchTasks()">Rechercher</button>
@@ -25,19 +24,25 @@
     <input type="text" id="title" placeholder="Titre de la tâche" required>
     <input type="text" id="description" placeholder="Description">
     <input type="date" id="due_date" placeholder="Date d'échéance">
+    <!-- Sélection de la priorité -->
+    <select id="priority">
+      <option value="haute">Haute</option>
+      <option value="moyenne" selected>Moyenne</option>
+      <option value="basse">Basse</option>
+    </select>
+    <!-- Champ pour saisir des tags séparés par des virgules -->
+    <input type="text" id="tags" placeholder="Tags (séparés par des virgules)">
     <button type="submit">Ajouter</button>
   </form>
 
   <h2>Liste des tâches</h2>
-  <!-- Bouton pour supprimer les tâches sélectionnées (type="button" pour éviter toute action de soumission) -->
   <button type="button" onclick="deleteSelected()">Supprimer les tâches sélectionnées</button>
   <ul id="taskList"></ul>
 
   <script>
-    // Stocke globalement les tâches récupérées
     let allTasks = [];
 
-    // Affiche la liste des tâches avec case à cocher et boutons
+    // Affiche la liste des tâches avec les nouvelles informations
     function afficherTaches(taches) {
       allTasks = taches;
       const taskList = document.getElementById('taskList');
@@ -52,10 +57,13 @@
         checkbox.className = 'taskCheckbox';
         li.appendChild(checkbox);
 
-        // Affichage de la tâche
+        // Affichage des informations de la tâche
         li.innerHTML += ` <strong>${tache.title}</strong> : ${tache.description}` +
                         (tache.due_date ? ` (Échéance: ${tache.due_date})` : "") +
-                        ` ${tache.completed ? "(Terminé)" : ""}`;
+                        ` - Priorité: ${tache.priority}` +
+                        (tache.tags && tache.tags.length ? ` - Tags: ${tache.tags.join(", ")}` : "") +
+                        ` ${tache.completed ? "(Terminé)" : ""}` +
+                        (tache.favorite ? " [Favori]" : "");
 
         // Bouton Modifier
         const editBtn = document.createElement('button');
@@ -73,6 +81,14 @@
         };
         li.appendChild(completeBtn);
 
+        // Bouton pour marquer comme favori (basculer)
+        const favBtn = document.createElement('button');
+        favBtn.textContent = tache.favorite ? "Retirer des favoris" : "Marquer comme favori";
+        favBtn.onclick = function() {
+          toggleFavorite(tache);
+        };
+        li.appendChild(favBtn);
+
         // Bouton Supprimer individuel
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = "Supprimer";
@@ -85,7 +101,7 @@
       });
     }
 
-    // Récupère les tâches depuis le backend, optionnellement avec filtre
+    // Récupère les tâches depuis le backend, avec option de filtre
     function fetchTasks(query="") {
       let url = 'http://localhost:8000/tasks';
       if(query) {
@@ -102,9 +118,13 @@
       e.preventDefault();
       const title = document.getElementById('title').value;
       const description = document.getElementById('description').value;
-      const due_date = document.getElementById('due_date').value; // Format YYYY-MM-DD
-      const id = Date.now(); // Utilisation de l'horodatage comme identifiant unique
-      const task = { id, title, description, due_date, completed: false };
+      const due_date = document.getElementById('due_date').value;
+      const priority = document.getElementById('priority').value;
+      const tagsInput = document.getElementById('tags').value;
+      // On divise les tags par virgule et on enlève les espaces superflus
+      const tags = tagsInput ? tagsInput.split(",").map(tag => tag.trim()).filter(tag => tag !== "") : [];
+      const id = Date.now();
+      const task = { id, title, description, due_date, priority, tags, completed: false, favorite: false };
 
       fetch('http://localhost:8000/tasks', {
         method: 'POST',
@@ -169,13 +189,40 @@
       .catch(error => console.error('Erreur lors de la mise à jour de la tâche :', error));
     }
 
+    // Bascule le statut "favori" d'une tâche
+    function toggleFavorite(task) {
+      const updatedTask = { ...task, favorite: !task.favorite };
+      fetch(`http://localhost:8000/tasks/${task.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedTask)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Tâche mise à jour (favori) :', data);
+        fetchTasks();
+      })
+      .catch(error => console.error('Erreur lors de la mise à jour de la tâche :', error));
+    }
+
     // Permet d'éditer une tâche via des prompt() simples
     function editTask(task) {
       const newTitle = prompt("Modifier le titre:", task.title);
       const newDescription = prompt("Modifier la description:", task.description);
       const newDueDate = prompt("Modifier la date d'échéance (YYYY-MM-DD):", task.due_date || "");
+      const newPriority = prompt("Modifier la priorité (haute, moyenne, basse):", task.priority);
+      const newTags = prompt("Modifier les tags (séparés par des virgules):", task.tags ? task.tags.join(", ") : "");
       if(newTitle !== null && newDescription !== null) {
-        const updatedTask = { ...task, title: newTitle, description: newDescription, due_date: newDueDate };
+        // Traitement des tags
+        const tags = newTags ? newTags.split(",").map(tag => tag.trim()).filter(tag => tag !== "") : [];
+        const updatedTask = { 
+          ...task, 
+          title: newTitle, 
+          description: newDescription, 
+          due_date: newDueDate, 
+          priority: newPriority, 
+          tags: tags 
+        };
         fetch(`http://localhost:8000/tasks/${task.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },

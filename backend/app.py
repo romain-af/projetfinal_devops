@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import date
 
@@ -22,6 +22,9 @@ class Task(BaseModel):
     description: str
     due_date: Optional[date] = None  # Date d'échéance optionnelle
     completed: bool = False
+    priority: Optional[str] = "moyenne"  # Valeurs possibles : "haute", "moyenne", "basse"
+    favorite: bool = False             # Marquer comme favori
+    tags: List[str] = Field(default_factory=list)  # Liste de tags pour catégorisation
 
 # "Base de données" en mémoire
 tasks: List[Task] = []
@@ -40,6 +43,7 @@ def search_tasks(query: Optional[str] = Query(None, description="Mot-clé de rec
         return [
             task for task in tasks
             if query.lower() in task.title.lower() or query.lower() in task.description.lower()
+            or any(query.lower() in tag.lower() for tag in task.tags)
         ]
     return tasks
 
@@ -75,10 +79,8 @@ def delete_many_tasks(request: DeleteTasksRequest):
     ids = request.ids
     deleted = []
     not_found = []
-    # Pour chaque identifiant fourni, tenter de supprimer la tâche correspondante
     for task_id in ids:
         found = False
-        # Parcours de la liste des tâches
         for index, t in enumerate(tasks):
             if t.id == task_id:
                 tasks.pop(index)

@@ -127,8 +127,8 @@ Le pipeline CI/CD a été configuré pour automatiser :
 Ce projet final aboutit à une application web complète qui ressemble à :
 
 ![Vue d'ensemble du pipeline CI/CD](images/screen3.png)
+
 ![Vue d'ensemble du pipeline CI/CD](images/screen4.png)
-![Vue d'ensemble du pipeline CI/CD](images/screen5.png)
 
 En détails, il permet d'effectuer les actions suivantes :
 

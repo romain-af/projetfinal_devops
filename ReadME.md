@@ -52,7 +52,7 @@ L'architecture du projet se décompose en plusieurs composants interconnectés :
 1. **Cloner le dépôt :**
    ```bash
    git clone https://github.com/votre-utilisateur/task-manager.git
-   cd task-manager
+   cd task-manager ```
 
    ## Construire et Lancer les Conteneurs
 
@@ -60,6 +60,7 @@ Depuis la racine du projet (contenant le fichier `docker-compose.yml`), exécute
 
 ```bash
 docker-compose up --build -d
+ ```
 
 Cette commande construit les images Docker (backend, frontend, etc.) et lance les conteneurs en mode détaché.
 
@@ -67,3 +68,4 @@ Pour vérifier que les services sont actifs, utilisez :
 
 ```bash
 docker-compose ps
+ ```

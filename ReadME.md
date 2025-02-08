@@ -5,58 +5,30 @@ Ce projet final a pour objectif de concevoir et déployer une application web si
 L’idée est de se familiariser avec les fondamentaux de l’intégration et de la livraison continues, la conteneurisation et le déploiement sur un cluster Kubernetes (local ou via un service managé tel qu'AWS EKS).  
 Le projet intègre un frontend, un backend et une base de données, et offre des fonctionnalités avancées telles que la priorisation, le marquage en favori, la catégorisation par tags, ainsi qu’un tableau de bord interactif avec des graphiques de statistiques.
 
-## Architecture du Projet
+## Architecture Générale
+L'architecture du projet se décompose en plusieurs composants interconnectés :
 
-Le projet se compose de trois composants principaux, orchestrés via Docker et Docker Compose (avec la possibilité de déployer sur un cluster Kubernetes) et intégrés dans un pipeline CI/CD automatisé.
+- **Frontend**  
+  - Application web statique servie par Nginx et stylisée avec Bootstrap.  
+  - Interface moderne intégrant un formulaire d'ajout de tâches, des filtres avancés, une liste de tâches et un tableau de bord avec un graphique (via Chart.js).
 
-### 1. Frontend
-- **Technologies :**
-  - HTML, CSS (Bootstrap) et JavaScript.
-  - Utilisation de Chart.js pour la visualisation graphique.
-- **Fonctionnalités :**
-  - Interface de gestion des tâches avec formulaire d'ajout, filtres avancés (par mot-clé, priorité, tags) et tableau de bord interactif.
-  - Affichage de la liste des tâches avec options d’édition, suppression (individuelle et multiple), marquage en favori et basculement du statut "terminé".
-- **Serveur :**
-  - Servi par Nginx dans un conteneur Docker.
+- **Backend**  
+  - API REST développée en Python avec FastAPI qui gère les opérations CRUD sur les tâches.  
+  - Gestion des fonctionnalités avancées : priorisation (haute, moyenne, basse), marquage en favori et association de tags pour la catégorisation.
 
-### 2. Backend
-- **Technologies :**
-  - Python et FastAPI pour le développement de l’API REST.
-- **Fonctionnalités :**
-  - Opérations CRUD sur les tâches.
-  - Gestion avancée : priorisation (haute, moyenne, basse), marquage en favori, catégorisation par tags et recherche avancée.
-  - Middleware CORS pour permettre l’accès depuis le frontend.
-- **Containerisation :**
-  - Déployé dans un conteneur Docker via un Dockerfile dédié.
+- **Base de Données**  
+  - Conteneur PostgreSQL pour la persistance des données.
 
-### 3. Base de Données
-- **Technologies :**
-  - PostgreSQL pour la persistance des données.
-- **Déploiement :**
-  - Utilisation de l'image officielle PostgreSQL, conteneurisée et orchestrée avec Docker Compose.
+- **Conteneurisation et Orchestration**  
+  - Chaque composant est conteneurisé à l'aide de Docker.  
+  - Docker Compose orchestre le démarrage des services en local et facilite la reproduction de l'architecture.
 
----
+- **Pipeline CI/CD**  
+  - Un pipeline automatisé (configuré via GitHub Actions) assure la construction des images Docker, l'exécution des tests unitaires et le déploiement automatique sur un cluster Kubernetes (ou via Docker Compose en local).
 
-## Orchestration et Déploiement
+### Schéma de l'Architecture
 
-- **Conteneurisation :**
-  - Chaque composant (frontend, backend, base de données) est conteneurisé à l’aide de Docker.
-  
-- **Orchestration :**
-  - **Docker Compose** est utilisé pour lancer et gérer l’ensemble des conteneurs en local.
-  - Possibilité de déploiement sur un cluster Kubernetes (via Minikube, AWS EKS, etc.) en adaptant les manifestes Kubernetes.
-
-- **Pipeline CI/CD :**
-  - Configuré avec GitHub Actions, le pipeline automatise :
-    - La construction des images Docker pour le frontend et le backend.
-    - L'exécution des tests unitaires (notamment pour le backend).
-    - Le déploiement automatique sur un cluster Kubernetes (ou via Docker Compose en local) après chaque commit ou fusion.
-
----
-
-## Schéma de l'Architecture
-
-```plaintext
+  ```plaintext
                    +-------------------------------+
                    |        Frontend               |
                    |  (Nginx, Bootstrap, Chart.js) |
@@ -76,7 +48,6 @@ Le projet se compose de trois composants principaux, orchestrés via Docker et D
                    |       (PostgreSQL)            |
                    +-------------------------------+
 ```
-
 
 *Figure 1 : Schéma simplifié de l'architecture (screenshots à intégrer ultérieurement)*
 

@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Task Manager</title>
+  <style>
+    li { margin-bottom: 8px; }
+    button { margin-left: 5px; }
+  </style>
 </head>
 <body>
   <h1>Task Manager</h1>
@@ -18,10 +22,27 @@
     // Fonction pour afficher les tâches dans la liste
     function afficherTaches(taches) {
       const taskList = document.getElementById('taskList');
-      taskList.innerHTML = ''; // vider la liste
+      taskList.innerHTML = '';
       taches.forEach(tache => {
         const li = document.createElement('li');
-        li.textContent = `${tache.title} : ${tache.description}`;
+        li.textContent = `${tache.title} : ${tache.description} ${tache.completed ? "(Terminé)" : ""}`;
+        
+        // Bouton pour supprimer la tâche
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = "Supprimer";
+        deleteBtn.onclick = function() {
+          deleteTask(tache.id);
+        };
+        li.appendChild(deleteBtn);
+
+        // Bouton pour basculer le statut "terminé"
+        const completeBtn = document.createElement('button');
+        completeBtn.textContent = tache.completed ? "Marquer comme non terminé" : "Marquer comme terminé";
+        completeBtn.onclick = function() {
+          toggleComplete(tache);
+        };
+        li.appendChild(completeBtn);
+
         taskList.appendChild(li);
       });
     }
@@ -39,22 +60,50 @@
       e.preventDefault();
       const title = document.getElementById('title').value;
       const description = document.getElementById('description').value;
-      // Vous pouvez générer un id automatiquement pour la démo ou laisser l'utilisateur le saisir
-      const id = Date.now(); // par exemple, utiliser l'horodatage comme id
+      const id = Date.now(); // Utilise l'horodatage comme identifiant
+      const task = { id, title, description, completed: false };
 
       fetch('http://localhost:8000/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, title, description })
+        body: JSON.stringify(task)
       })
       .then(response => response.json())
       .then(data => {
         console.log('Tâche ajoutée :', data);
-        // Actualiser la liste des tâches après l'ajout
         fetchTasks();
       })
       .catch(error => console.error('Erreur lors de l’ajout de la tâche :', error));
     });
+
+    // Fonction pour supprimer une tâche
+    function deleteTask(taskId) {
+      fetch(`http://localhost:8000/tasks/${taskId}`, {
+        method: 'DELETE'
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Tâche supprimée :', data);
+        fetchTasks();
+      })
+      .catch(error => console.error('Erreur lors de la suppression de la tâche :', error));
+    }
+
+    // Fonction pour basculer le statut "terminé" d'une tâche
+    function toggleComplete(task) {
+      const updatedTask = { ...task, completed: !task.completed };
+      fetch(`http://localhost:8000/tasks/${task.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedTask)
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Tâche mise à jour :', data);
+        fetchTasks();
+      })
+      .catch(error => console.error('Erreur lors de la mise à jour de la tâche :', error));
+    }
 
     // Charger les tâches dès le chargement de la page
     fetchTasks();

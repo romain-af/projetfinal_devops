@@ -124,7 +124,12 @@ Le pipeline CI/CD a été configuré pour automatiser :
 
 ## Résultats
 
-Ce projet final aboutit à une application web complète qui permet :
+Ce projet final aboutit à une application web complète qui ressemble à :
+
+![Vue d'ensemble du pipeline CI/CD](images/screen3.png)
+![Vue d'ensemble du pipeline CI/CD](images/screen4.png)
+
+En détails, il permet d'effectuer les actions suivantes :
 
 ### Gestion des Tâches
 - **Ajout, modification, suppression individuelle** et **suppression multiple** (via sélection de cases).

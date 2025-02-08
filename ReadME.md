@@ -61,8 +61,8 @@ L'architecture du projet se décompose en plusieurs composants interconnectés :
 ### Installation et Lancement en Local
 1. **Cloner le dépôt :**
    ```bash
-   git clone https://github.com/votre-utilisateur/task-manager.git
-   cd task-manager 
+   git clone https://github.com/romain-af/projetfinal_devops.git
+   cd projetfinal_devops
     ```
 
 2. **Construire et lancer les conteneurs  :**

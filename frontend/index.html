@@ -6,34 +6,64 @@
   <style>
     li { margin-bottom: 8px; }
     button { margin-left: 5px; }
+    /* Ajoute un espace en bas de la section de recherche */
+    .search-container { margin-bottom: 20px; }
   </style>
 </head>
 <body>
   <h1>Task Manager</h1>
+
+  <!-- Section de recherche avec espace en bas -->
+  <div class="search-container">
+    <input type="text" id="searchQuery" placeholder="Recherche par mot-clé">
+    <button onclick="searchTasks()">Rechercher</button>
+    <button onclick="clearSearch()">Effacer la recherche</button>
+  </div>
+
+  <!-- Formulaire d'ajout de tâche -->
   <form id="taskForm">
     <input type="text" id="title" placeholder="Titre de la tâche" required>
     <input type="text" id="description" placeholder="Description">
+    <input type="date" id="due_date" placeholder="Date d'échéance">
     <button type="submit">Ajouter</button>
   </form>
+
   <h2>Liste des tâches</h2>
+  <!-- Bouton pour supprimer les tâches sélectionnées (type="button" pour éviter toute action de soumission) -->
+  <button type="button" onclick="deleteSelected()">Supprimer les tâches sélectionnées</button>
   <ul id="taskList"></ul>
 
   <script>
-    // Fonction pour afficher les tâches dans la liste
+    // Stocke globalement les tâches récupérées
+    let allTasks = [];
+
+    // Affiche la liste des tâches avec case à cocher et boutons
     function afficherTaches(taches) {
+      allTasks = taches;
       const taskList = document.getElementById('taskList');
       taskList.innerHTML = '';
       taches.forEach(tache => {
         const li = document.createElement('li');
-        li.textContent = `${tache.title} : ${tache.description} ${tache.completed ? "(Terminé)" : ""}`;
-        
-        // Bouton pour supprimer la tâche
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = "Supprimer";
-        deleteBtn.onclick = function() {
-          deleteTask(tache.id);
+
+        // Case à cocher pour sélection multiple
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = tache.id;
+        checkbox.className = 'taskCheckbox';
+        li.appendChild(checkbox);
+
+        // Affichage de la tâche
+        li.innerHTML += ` <strong>${tache.title}</strong> : ${tache.description}` +
+                        (tache.due_date ? ` (Échéance: ${tache.due_date})` : "") +
+                        ` ${tache.completed ? "(Terminé)" : ""}`;
+
+        // Bouton Modifier
+        const editBtn = document.createElement('button');
+        editBtn.textContent = "Modifier";
+        editBtn.onclick = function() {
+          editTask(tache);
         };
-        li.appendChild(deleteBtn);
+        li.appendChild(editBtn);
 
         // Bouton pour basculer le statut "terminé"
         const completeBtn = document.createElement('button');
@@ -43,25 +73,38 @@
         };
         li.appendChild(completeBtn);
 
+        // Bouton Supprimer individuel
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = "Supprimer";
+        deleteBtn.onclick = function() {
+          deleteTask(tache.id);
+        };
+        li.appendChild(deleteBtn);
+
         taskList.appendChild(li);
       });
     }
 
-    // Récupérer les tâches depuis le backend
-    function fetchTasks() {
-      fetch('http://localhost:8000/tasks')
+    // Récupère les tâches depuis le backend, optionnellement avec filtre
+    function fetchTasks(query="") {
+      let url = 'http://localhost:8000/tasks';
+      if(query) {
+        url = 'http://localhost:8000/tasks/search?query=' + encodeURIComponent(query);
+      }
+      fetch(url)
         .then(response => response.json())
         .then(data => afficherTaches(data))
         .catch(error => console.error('Erreur lors de la récupération des tâches :', error));
     }
 
-    // Gestion de l'envoi du formulaire pour ajouter une tâche
+    // Ajout d'une nouvelle tâche
     document.getElementById('taskForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const title = document.getElementById('title').value;
       const description = document.getElementById('description').value;
-      const id = Date.now(); // Utilise l'horodatage comme identifiant
-      const task = { id, title, description, completed: false };
+      const due_date = document.getElementById('due_date').value; // Format YYYY-MM-DD
+      const id = Date.now(); // Utilisation de l'horodatage comme identifiant unique
+      const task = { id, title, description, due_date, completed: false };
 
       fetch('http://localhost:8000/tasks', {
         method: 'POST',
@@ -76,7 +119,7 @@
       .catch(error => console.error('Erreur lors de l’ajout de la tâche :', error));
     });
 
-    // Fonction pour supprimer une tâche
+    // Supprime une tâche unique
     function deleteTask(taskId) {
       fetch(`http://localhost:8000/tasks/${taskId}`, {
         method: 'DELETE'
@@ -89,7 +132,28 @@
       .catch(error => console.error('Erreur lors de la suppression de la tâche :', error));
     }
 
-    // Fonction pour basculer le statut "terminé" d'une tâche
+    // Supprime les tâches sélectionnées
+    function deleteSelected() {
+      const checkboxes = document.querySelectorAll('.taskCheckbox:checked');
+      const ids = Array.from(checkboxes).map(cb => parseInt(cb.value));
+      if(ids.length === 0) {
+        alert("Aucune tâche sélectionnée.");
+        return;
+      }
+      fetch('http://localhost:8000/tasks/delete-many', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: ids })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Tâches supprimées :', data);
+        fetchTasks();
+      })
+      .catch(error => console.error('Erreur lors de la suppression multiple :', error));
+    }
+
+    // Bascule le statut "terminé" d'une tâche
     function toggleComplete(task) {
       const updatedTask = { ...task, completed: !task.completed };
       fetch(`http://localhost:8000/tasks/${task.id}`, {
@@ -105,7 +169,40 @@
       .catch(error => console.error('Erreur lors de la mise à jour de la tâche :', error));
     }
 
-    // Charger les tâches dès le chargement de la page
+    // Permet d'éditer une tâche via des prompt() simples
+    function editTask(task) {
+      const newTitle = prompt("Modifier le titre:", task.title);
+      const newDescription = prompt("Modifier la description:", task.description);
+      const newDueDate = prompt("Modifier la date d'échéance (YYYY-MM-DD):", task.due_date || "");
+      if(newTitle !== null && newDescription !== null) {
+        const updatedTask = { ...task, title: newTitle, description: newDescription, due_date: newDueDate };
+        fetch(`http://localhost:8000/tasks/${task.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedTask)
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Tâche mise à jour :', data);
+          fetchTasks();
+        })
+        .catch(error => console.error('Erreur lors de la mise à jour de la tâche :', error));
+      }
+    }
+
+    // Lance la recherche selon le mot-clé saisi
+    function searchTasks() {
+      const query = document.getElementById('searchQuery').value;
+      fetchTasks(query);
+    }
+
+    // Réinitialise la recherche et recharge toutes les tâches
+    function clearSearch() {
+      document.getElementById('searchQuery').value = "";
+      fetchTasks();
+    }
+
+    // Charger les tâches au chargement de la page
     fetchTasks();
   </script>
 </body>

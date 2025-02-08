@@ -110,10 +110,15 @@ Le pipeline CI/CD a été configuré pour automatiser :
 - **Déploiement automatique** sur le cluster Kubernetes (ou via Docker Compose en local) après chaque commit ou fusion de code.
 
 ### Démonstration du Pipeline
-- **Screenshot 1 :** Vue d'ensemble du pipeline CI/CD dans GitHub Actions.
-- **Screenshot 2 :** Logs du build et du déploiement montrant la réussite des tests et le déploiement sur le cluster.
+- **Screenshot 1 :** 
+![Vue d'ensemble du pipeline CI/CD](images/screen1.png)
 
-*(Les screenshots seront intégrés ultérieurement dans ce document.)*
+
+- **Screenshot 2 :** 
+
+![Logs du build et du déploiement](images/screen2.png)
+
+
 
 ---
 

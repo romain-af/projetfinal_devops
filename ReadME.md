@@ -57,36 +57,36 @@ L'architecture du projet se décompose en plusieurs composants interconnectés :
 
 2. **Construire et lancer les conteneurs  :**
 
-Depuis la racine du projet (contenant le fichier `docker-compose.yml`), exécutez les commandes suivantes :
+    Depuis la racine du projet (contenant le fichier `docker-compose.yml`), exécutez les commandes suivantes :
 
-```bash
-docker-compose up --build -d
- ```
+    ```bash
+    docker-compose up --build -d
+    ```
 
 Cette commande construit les images Docker (backend, frontend, etc.) et lance les conteneurs en mode détaché.
 
 3. **Vérifier que les services sont actifs   :**
 
-Pour vérifier que les services sont actifs, utilisez :
+    Pour vérifier que les services sont actifs, utilisez :
 
-```bash
-docker-compose ps
- ```
+    ```bash
+    docker-compose ps
+    ```
 
 4. **Accéder à l'Application   :**
  
-**Frontend** :
-Ouvrez http://localhost dans votre navigateur.
+    **Frontend** :
+    Ouvrez http://localhost dans votre navigateur.
 
-**Backend** :
-Accédez à http://localhost:8000/docs pour consulter la documentation interactive de l'API.
+    **Backend** :
+    Accédez à http://localhost:8000/docs pour consulter la documentation interactive de l'API.
 
-**Déploiement sur Kubernetes**
-Si vous utilisez un cluster Kubernetes (par exemple via AWS EKS), appliquez vos manifestes avec :
+    **Déploiement sur Kubernetes**
+    Si vous utilisez un cluster Kubernetes (par exemple via AWS EKS), appliquez vos manifestes avec :
 
-```bash
-kubectl apply -f kubernetes-manifests/
-```
+    ```bash
+    kubectl apply -f kubernetes-manifests/
+    ```
 
 ## Pipeline CI/CD
 

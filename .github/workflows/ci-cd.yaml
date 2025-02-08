@@ -25,8 +25,8 @@ jobs:
 
       - name: Build and push backend image
         run: |
-          docker build -t your-dockerhub-username/backend:latest ./backend
-          docker push your-dockerhub-username/backend:latest
+          docker build -t romainaf/backend:latest ./backend
+          docker push romainaf/backend:latest
 
   build-frontend:
     name: Build & Push Frontend

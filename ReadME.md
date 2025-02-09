@@ -49,7 +49,7 @@ L'architecture du projet se décompose en plusieurs composants interconnectés :
                    +-------------------------------+
 ```
 
-*Figure 1 : Schéma simplifié de l'architecture (screenshots à intégrer ultérieurement)*
+*Figure 1 : Schéma simplifié de l'architecture*
 
 ## Étapes pour Lancer le Projet
 
